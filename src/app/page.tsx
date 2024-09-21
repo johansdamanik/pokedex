@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 
+import LoadingDetailCard from '@/components/LoadingDetailCard'
 import Pokeball from '@/components/PokeBall'
 import PokemonCard from '@/components/PokemonCard'
 import PokemonDetailCard from '@/components/PokemonDetailCard'
@@ -194,7 +195,11 @@ export default function Home() {
         <div className="flex gap-4">
           <div className="flex-1 lg:py-12">
             <div className="flex justify-between items-center py-2">
-              <img src="/assets/pokedex-logo.png" alt='pokedex-logo' className="h-12" />
+              <img
+                src="/assets/pokedex-logo.png"
+                alt="pokedex-logo"
+                className="h-12"
+              />
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.linkedin.com/in/johan-simeon-damanik-a2a6a0253/"
@@ -271,7 +276,7 @@ export default function Home() {
             {pokemonDetail ? (
               isMobile ? (
                 <Drawer.Drawer open={drawer} onOpenChange={setDrawer}>
-                  <Drawer.DrawerContent className=" bg-white max-h-[85%] border-none">
+                  <Drawer.DrawerContent className="bg-white max-h-[85%] border-none">
                     <Drawer.DrawerTitle className="hidden">
                       Pokémon Detail
                     </Drawer.DrawerTitle>
@@ -307,6 +312,10 @@ export default function Home() {
                   </motion.div>
                 </AnimatePresence>
               )
+            ) : loadingDetail ? (
+              <div className="py-14">
+                <LoadingDetailCard />
+              </div>
             ) : (
               <div className="h-screen flex justify-center items-center">
                 <div className="grow text-center">
