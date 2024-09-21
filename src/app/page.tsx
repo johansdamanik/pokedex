@@ -1,7 +1,8 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -11,7 +12,6 @@ import PokemonDetailCard from '@/components/PokemonDetailCard'
 import SearchPokemon from '@/components/SearchPokemon'
 import TypeFilter from '@/components/TypeFilter'
 import WeaknessFilter from '@/components/WeaknessFilter'
-import { Button } from '@/components/ui/button'
 import * as Drawer from '@/components/ui/drawer'
 
 import {
@@ -143,7 +143,8 @@ export default function Home() {
   }
 
   // Infinite scroll handler
-  const handleScroll = () => {
+
+  const handleScroll = useCallback(() => {
     if (!hasMore || loading) return
 
     const scrollTop = window.scrollY
@@ -153,7 +154,7 @@ export default function Home() {
     if (scrollTop + windowHeight >= documentHeight - 300) {
       loadNextPage()
     }
-  }
+  }, [hasMore, loading])
 
   // Attach scroll listener for infinite scroll
   useEffect(() => {
@@ -162,16 +163,19 @@ export default function Home() {
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [hasMore, loading, currentPage, filteredPokemonList])
+  }, [hasMore, loading, currentPage, filteredPokemonList, handleScroll])
 
   // Scroll to the top when a Pokémon is selected
   useEffect(() => {
     if (scrollRef.current && pokemonDetail) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         scrollRef.current?.scrollTo({ top: 0 })
       }, 500)
+
+      // Cleanup timeout
+      return () => clearTimeout(timeoutId)
     }
-  }, [pokemonDetail?.id])
+  }, [pokemonDetail])
 
   if (loading && currentPage === 1) {
     // if (true) {
@@ -190,17 +194,19 @@ export default function Home() {
         <div className="flex gap-4">
           <div className="flex-1 lg:py-12">
             <div className="flex justify-between items-center py-2">
-              <img src="/assets/pokedex-logo.png" className="h-12" />
+              <img src="/assets/pokedex-logo.png" alt='pokedex-logo' className="h-12" />
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.linkedin.com/in/johan-simeon-damanik-a2a6a0253/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <img
+                  <Image
                     src="/assets/linkedin-logo.png"
                     className="h-6"
                     alt="LinkedIn"
+                    width={24}
+                    height={24}
                   />
                 </a>
                 <a
@@ -208,10 +214,12 @@ export default function Home() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <img
+                  <Image
                     src="/assets/github-logo.png"
                     className="h-6"
                     alt="GitHub"
+                    width={24}
+                    height={24}
                   />
                 </a>
               </div>

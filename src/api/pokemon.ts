@@ -44,6 +44,11 @@ export interface PokemonApiResponse {
   results: Pokemon[]
 }
 
+interface PokemonResult {
+  name: string;
+  url: string;
+}
+
 // Extract animated gif if available, otherwise fallback to null
 const imgUrl =
   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/'
@@ -66,7 +71,7 @@ export const fetchPokemons = async (): Promise<Pokemon[]> => {
       'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/'
 
     // Map initial Pokemon data
-    let pokemons: Pokemon[] = data.results.map((pokemon: any) => {
+    let pokemons: Pokemon[] = data.results.map((pokemon: PokemonResult) => {
       // Extract ID from the URL
       const urlParts = pokemon.url.split('/')
       const id = urlParts[urlParts.length - 2] // Get the second-last part which is the ID
@@ -93,7 +98,7 @@ export const fetchPokemons = async (): Promise<Pokemon[]> => {
 // Fetch Pokemon types and append to each Pokemon
 export const getAllTypes = async (pokemons: Pokemon[]): Promise<Pokemon[]> => {
   for (let i = 0; i < 18; i++) {
-    let url = 'https://pokeapi.co/api/v2/type/' + (i + 1)
+    const url = 'https://pokeapi.co/api/v2/type/' + (i + 1)
     const response = await fetch(url)
     const responseAsJson = await response.json()
 
