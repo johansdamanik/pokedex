@@ -99,7 +99,6 @@ export default function Home() {
     fetchData()
   }, [])
 
-  // Filter the Pokémon list based on the search query
   // Filter the Pokémon list based on the search query and selected types
   useEffect(() => {
     const filteredData = allPokemon.filter((pokemon) => {
