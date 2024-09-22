@@ -53,6 +53,9 @@ export default function Home() {
   const handlePokemonClick = async (id: number) => {
     // If the clicked ID is the same as the currently selected Pokémon, do nothing
     if (id === pokemonDetail?.id) {
+      if (!drawer) {
+        setDrawer(true)
+      }
       return
     }
 
@@ -82,6 +85,7 @@ export default function Home() {
   const handleReset = () => {
     setSelectedTypes([]) // Reset selected types
     setSelectedWeaknesses([]) // Reset selected weaknesses
+    setSearchQuery('')
   }
 
   // Fetch all Pokémon data once on component mount
@@ -90,7 +94,10 @@ export default function Home() {
       try {
         const data = await fetchPokemons() // Fetch all Pokémon initially
         setAllPokemon(data) // Store all Pokémon
+        setFilteredPokemonList(data) // Set the filtered list to include all initially
+        setDisplayedPokemonList(data.slice(0, pageSize)) // Display the first page
         setLoading(false)
+        setHasMore(data.length > pageSize) // Set hasMore based on initial data size
       } catch (error) {
         console.error('Failed to fetch Pokémon data:', error)
         setLoading(false)
@@ -122,6 +129,7 @@ export default function Home() {
 
       return matchesQuery && matchesType && matchesWeakness
     })
+
     setFilteredPokemonList(filteredData)
     setDisplayedPokemonList(filteredData.slice(0, pageSize)) // Reset to the first page of filtered data
     setCurrentPage(1) // Reset the current page to 1
@@ -129,33 +137,37 @@ export default function Home() {
   }, [searchQuery, selectedTypes, selectedWeaknesses, allPokemon])
 
   // Load the next page of Pokémon from the filtered list
+  // Load the next page of Pokémon from the filtered list
   const loadNextPage = () => {
-    const nextPage = currentPage + 1
-    const start = (nextPage - 1) * pageSize
-    const end = nextPage * pageSize
+    // Calculate the start and end index for the next page based on currentPage
+    const start = currentPage * pageSize // We start after the current page
+    const end = (currentPage + 1) * pageSize // End of the next page
+
+    // Get the next set of Pokémon to display
     const nextPageData = filteredPokemonList.slice(start, end)
 
+    // Only update if there's more data to load
     if (nextPageData.length > 0) {
-      setDisplayedPokemonList((prev) => [...prev, ...nextPageData]) // Append next page data to the displayed Pokémon list
-      setCurrentPage(nextPage) // Update current page
+      setDisplayedPokemonList((prev) => [...prev, ...nextPageData]) // Append new data
+      setCurrentPage((prevPage) => prevPage + 1) // Increment the current page
     } else {
-      setHasMore(false) // No more Pokémon to load
+      setHasMore(false) // If no more data, stop loading
     }
   }
 
   // Infinite scroll handler
-
   const handleScroll = useCallback(() => {
-    if (!hasMore || loading) return
+    if (!hasMore || loading) return // Prevent further loading if no more data or if still loading
 
     const scrollTop = window.scrollY
     const documentHeight = document.documentElement.scrollHeight
     const windowHeight = window.innerHeight
 
+    // If the user has scrolled near the bottom, load the next page
     if (scrollTop + windowHeight >= documentHeight - 300) {
       loadNextPage()
     }
-  }, [hasMore, loading])
+  }, [hasMore, loading, currentPage, filteredPokemonList])
 
   // Attach scroll listener for infinite scroll
   useEffect(() => {
@@ -232,7 +244,10 @@ export default function Home() {
             <div className="my-4 flex flex-col gap-4">
               <div>
                 {/* Pass setSearchQuery to SearchPokemon */}
-                <SearchPokemon onSearchChange={setSearchQuery} />
+                <SearchPokemon
+                  onSearchChange={setSearchQuery}
+                  searchQuery={searchQuery}
+                />
               </div>
               <div className="flex justify-between gap-2">
                 <TypeFilter
